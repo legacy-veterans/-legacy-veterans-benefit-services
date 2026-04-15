@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Secure Payment | Legacy Veterans Benefit Services</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Georgia', serif;
+      background-color: #0d1b2a;
+      color: #ffffff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* TOP BANNER */
+    .top-banner {
+      background-color: #b22234;
+      text-align: center;
+      padding: 10px;
+      font-size: 13px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-family: 'Arial', sans-serif;
+      color: #ffffff;
+    }
+
+    /* HEADER */
+    header {
+      background-color: #1b2a4a;
+      padding: 30px 20px;
+      text-align: center;
+      border-bottom: 4px solid #c9a84c;
+    }
+
+    header img.logo {
+      max-width: 120px;
+      margin-bottom: 15px;
+    }
+
+    header h1 {
+      font-size: 28px;
+      color: #c9a84c;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    header p.tagline {
+      font-size: 14px;
+      color: #a0b0c8;
+      margin-top: 6px;
+      font-family: 'Arial', sans-serif;
+      letter-spacing: 1px;
+    }
+
+    /* STARS DIVIDER */
+    .stars {
+      text-align: center;
+      color: #c9a84c;
+      font-size: 18px;
+      padding: 15px 0;
+      letter-spacing: 8px;
+    }
+
+    /* MAIN CONTAINER */
+    .container {
+      max-width: 720px;
+      margin: 40px auto;
+      padding: 0 20px;
+      flex: 1;
+    }
+
+    /* PAYMENT CARD */
+    .payment-card {
+      background-color: #1b2a4a;
+      border: 1px solid #c9a84c;
+      border-radius: 8px;
+      padding: 40px;
+      text-align: center;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+
+    .shield-icon {
+      font-size: 52px;
+      margin-bottom: 15px;
+    }
+
+    .payment-card h2 {
+      font-size: 22px;
+      color: #c9a84c;
+      margin-bottom: 15px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .payment-card p {
+      font-size: 15px;
+      color: #c8d8e8;
+      line-height: 1.8;
+      margin-bottom: 30px;
+      font-family: 'Arial', sans-serif;
+    }
+
+    /* DIVIDER LINE */
+    .divider {
+      border: none;
+      border-top: 1px solid #c9a84c44;
+      margin: 25px 0;
+    }
+
+    /* PAY BUTTON */
+    .pay-button {
+      display: inline-block;
+      background-color: #c9a84c;
+      color: #0d1b2a;
+      text-decoration: none;
+      padding: 18px 50px;
+      font-size: 17px;
+      font-weight: bold;
+      border-radius: 5px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-family: 'Arial', sans-serif;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      box-shadow: 0 4px 15px rgba(201,168,76,0.3);
+    }
+
+    .pay-button:hover {
+      background-color: #e0c06a;
+      transform: translateY(-2px);
+    }
+
+    .pay-button:active {
+      transform: translateY(0);
+    }
+
+    /* SECURE BADGE */
+    .secure-badge {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 20px;
+      font-size: 13px;
+      color: #6a8aaa;
+      font-family: 'Arial', sans-serif;
+    }
+
+    .secure-badge span.lock {
+      font-size: 14px;
+    }
+
+    /* TRUST BADGES */
+    .trust-badges {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-top: 35px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      text-align: center;
+      color: #a0b0c8;
+      font-size: 12px;
+      font-family: 'Arial', sans-serif;
+    }
+
+    .badge .badge-icon {
+      font-size: 26px;
+      display: block;
+      margin-bottom: 5px;
+      color: #c9a84c;
+    }
+
+    /* CONTACT SECTION */
+    .contact-section {
+      background-color: #162236;
+      border: 1px solid #1b2a4a;
+      border-radius: 8px;
+      padding: 30px;
+      margin-top: 25px;
+      text-align: center;
+    }
+
+    .contact-section h3 {
+      color: #c9a84c;
+      font-size: 16px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    .contact-section p {
+      font-size: 14px;
+      color: #a0b0c8;
+      font-family: 'Arial', sans-serif;
+      line-height: 1.8;
+    }
+
+    .contact-section a {
+      color: #c9a84c;
+      text-decoration: none;
+    }
+
+    .contact-section a:hover {
+      text-decoration: underline;
+    }
+
+    /* FOOTER */
+    footer {
+      background-color: #1b2a4a;
+      border-top: 3px solid #b22234;
+      text-align: center;
+      padding: 25px 20px;
+      font-size: 12px;
+      color: #6a8aaa;
+      font-family: 'Arial', sans-serif;
+      line-height: 1.8;
+    }
+
+    footer a {
+      color: #c9a84c;
+      text-decoration: none;
+    }
+
+    footer .footer-flag {
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 600px) {
+      header h1 {
+        font-size: 20px;
+      }
+
+      .payment-card {
+        padding: 25px 20px;
+      }
+
+      .pay-button {
+        padding: 15px 30px;
+        font-size: 15px;
+      }
+
+      .trust-badges {
+        gap: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP BANNER -->
+  <div class="top-banner">
+    Proudly Serving Those Who Served Our Nation
+  </div>
+
+  <!-- HEADER -->
+  <header>
+    <h1>Legacy Veterans Benefit Services</h1>
+    <p class="tagline">Honoring Service &bull; Securing Benefits &bull; Fighting For Veterans</p>
+  </header>
+
+  <div class="stars">&#9733; &#9733; &#9733;</div>
+
+  <!-- MAIN CONTENT -->
+  <div class="container">
+
+    <!-- PAYMENT CARD -->
+    <div class="payment-card">
+      <div class="shield-icon">🛡️</div>
+      <h2>Secure Payment Portal</h2>
+      <p>
+        Thank you for choosing Legacy Veterans Benefit Services. We are honored to assist you
+        in securing the benefits you have rightfully earned through your service to our country.
+        Please click the button below to securely complete your payment.
+        All transactions are encrypted and processed safely through Square.
+      </p>
+
+      <hr class="divider"/>
+
+      <a href="https://square.link/u/2ZSiePUN" target="_blank" class="pay-button">
+        Pay Now
+      </a>
+
+      <div class="secure-badge">
+        <span class="lock">🔒</span>
+        <span>256-bit Encrypted &bull; Secured by Square &bull; Safe &amp; Confidential</span>
+      </div>
+
+      <!-- TRUST BADGES -->
+      <div class="trust-badges">
+        <div class="badge">
+          <span class="badge-icon">🔒</span>
+          Secure Checkout
+        </div>
+        <div class="badge">
+          <span class="badge-icon">✅</span>
+          Verified Business
+        </div>
+        <div class="badge">
+          <span class="badge-icon">🇺🇸</span>
+          Veteran Owned
+        </div>
+        <div class="badge">
+          <span class="badge-icon">💳</span>
+          All Cards Accepted
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTACT SECTION -->
+    <div class="contact-section">
+      <h3>Need Assistance?</h3>
+      <p>
+        If you have questions about your payment or services please contact us.<br/>
+        <a href="https://legacyveteransbenefitservices.com">legacyveteransbenefitservices.com</a>
+      </p>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-flag">🇺🇸</div>
+    &copy; 2026 Legacy Veterans Benefit Services. All Rights Reserved.<br/>
+    <a href="https://legacyveteransbenefitservices.com">legacyveteransbenefitservices.com</a><br/><br/>
+    Payments are securely processed through Square. We do not store your payment information.
+  </footer>
+
+</body>
+</html>
