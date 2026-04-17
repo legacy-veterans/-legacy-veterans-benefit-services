@@ -1,0 +1,1562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Legacy Veterans Benefit Services</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #04142b;
+  --card: #07203d;
+  --card2: #0a2548;
+  --text: #e8e6e1;
+  --muted: #5a7a9a;
+  --accent: #c8a96e;
+  --accent-light: rgba(200,169,110,0.08);
+  --blue: #4a9ae8;
+  --border: rgba(200,169,110,0.12);
+  --ease: cubic-bezier(.16,1,.3,1);
+}
+
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Outfit', sans-serif;
+  overflow-x: hidden;
+}
+
+/* Noise texture */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.04;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Cursor glow */
+#glow {
+  position: fixed;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(200,169,110,0.06) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+  top: 0; left: 0;
+  transform: translate(-250px, -250px);
+}
+
+/* Loader */
+#loader {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  transition: opacity 0.6s var(--ease);
+}
+.loader-ring {
+  width: 48px; height: 48px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loader-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Navbar */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 20px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.4s var(--ease);
+}
+nav.scrolled {
+  background: rgba(4,20,43,0.92);
+  backdrop-filter: blur(12px);
+  padding: 14px 48px;
+  border-bottom: 1px solid var(--border);
+}
+.nav-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.02em;
+  line-height: 1.15;
+}
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  list-style: none;
+}
+.nav-links a {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e8e6e1;
+  text-decoration: none;
+  transition: color 0.3s;
+  letter-spacing: 0.03em;
+}
+.nav-links a:hover { color: var(--accent); }
+.nav-cta {
+  background: var(--accent);
+  color: #04142b !important;
+  padding: 8px 20px;
+  border-radius: 24px;
+  font-weight: 700 !important;
+  font-size: 12px !important;
+  letter-spacing: 0.05em;
+  transition: all 0.4s var(--ease) !important;
+}
+.nav-cta:hover { background: #d4b87a !important; transform: translateY(-1px); }
+.nav-payment {
+  background: transparent;
+  color: var(--accent) !important;
+  border: 1px solid var(--accent);
+  padding: 8px 20px;
+  border-radius: 24px;
+  font-weight: 700 !important;
+  font-size: 12px !important;
+  letter-spacing: 0.05em;
+  transition: all 0.4s var(--ease) !important;
+}
+.nav-payment:hover {
+  background: rgba(200, 169, 110, 0.1) !important;
+  transform: translateY(-1px);
+}
+
+/* ═══════════════════════════════════
+   HERO
+═══════════════════════════════════ */
+.hero {
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+#heroCanvas {
+  position: absolute;
+  top: 0; left: 0;
+  display: block;
+  z-index: 1;
+}
+
+/* Cinematic letterbox bars */
+.hero-sticky::before,
+.hero-sticky::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  height: 72px;
+  background: #000;
+  z-index: 3;
+  pointer-events: none;
+}
+.hero-sticky::before { top: 0; }
+.hero-sticky::after { bottom: 0; }
+
+/* Thin gold rule accent line */
+.hero-rule {
+  width: 48px;
+  height: 1px;
+  background: var(--accent);
+  margin-bottom: 18px;
+  opacity: 0.8;
+}
+
+.hero-content {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0;
+  padding: 72px 0;
+}
+.hero-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: rgba(4,20,43,0.8);
+  padding: 5px 18px;
+  display: inline-block;
+  backdrop-filter: blur(6px);
+  margin-bottom: 18px;
+  border: 1px solid rgba(200,169,110,0.2);
+}
+/* Cinematic color grade overlay on canvas */
+.hero-grade {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 50%, rgba(30,15,5,0.18) 0%, rgba(4,10,20,0.45) 100%);
+  mix-blend-mode: multiply;
+}
+
+.hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(42px, 6vw, 80px);
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  margin-bottom: 4px;
+  text-shadow: 0 4px 30px rgba(0,0,0,.9), 0 2px 10px rgba(0,0,0,.7), 0 0 60px rgba(0,0,0,.5);
+}
+.hero-sub {
+  font-size: 17px;
+  color: #c8dff0;
+  background: rgba(4,20,43,0.8);
+  padding: 5px 18px;
+  display: inline-block;
+  backdrop-filter: blur(6px);
+  margin-bottom: 5px;
+  margin-top: 10px;
+  border: 1px solid rgba(200,169,110,0.1);
+}
+.hero-tagline {
+  font-size: 13px;
+  color: #8ab4d0;
+  background: rgba(4,20,43,0.8);
+  padding: 4px 18px;
+  display: inline-block;
+  backdrop-filter: blur(6px);
+  margin-bottom: 0;
+  border: 1px solid rgba(200,169,110,0.08);
+}
+.hero-cta {
+  margin-top: 24px;
+  background: var(--accent);
+  color: #04142b;
+  padding: 12px 28px;
+  border-radius: 32px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  display: inline-block;
+  backdrop-filter: blur(4px);
+  transition: all 0.4s var(--ease);
+}
+.hero-cta:hover { background: #d4b87a; transform: translateY(-2px); }
+.scroll-hint {
+  position: absolute;
+  bottom: 84px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: rgba(4,20,43,0.75);
+  padding: 6px 14px 8px;
+  backdrop-filter: blur(6px);
+  z-index: 4;
+}
+.scroll-hint-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.scroll-hint-arrow {
+  animation: bounce 1.6s ease-in-out infinite;
+  color: var(--accent);
+}
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(4px); }
+}
+
+/* ═══════════════════════════════════
+   MARQUEE
+═══════════════════════════════════ */
+.marquee-section {
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+  padding: 0;
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  padding: 18px 0;
+}
+.marquee-content {
+  display: flex;
+  gap: 0;
+  flex-shrink: 0;
+}
+.marquee-item {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 0 40px;
+  white-space: nowrap;
+}
+.marquee-item span {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 500;
+}
+.marquee-dot {
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════
+   SECTIONS — shared
+═══════════════════════════════════ */
+section {
+  position: relative;
+  z-index: 1;
+}
+.section-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 48px;
+}
+.section-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(28px, 3.5vw, 44px);
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+.section-body {
+  font-size: 16px;
+  color: #8ab0d0;
+  line-height: 1.75;
+  max-width: 560px;
+}
+.fade-up {
+  opacity: 0;
+  transform: translateY(32px);
+}
+
+/* ═══════════════════════════════════
+   ABOUT
+═══════════════════════════════════ */
+.about {
+  padding: 120px 0;
+  background: var(--bg);
+}
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+}
+.about-visual {
+  position: relative;
+}
+.about-image-wrap {
+  border-radius: 12px;
+  overflow: hidden;
+  aspect-ratio: 4/3;
+  background: var(--card);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.about-image-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.85;
+}
+.about-badge {
+  position: absolute;
+  bottom: -20px;
+  right: -20px;
+  background: var(--accent);
+  color: #04142b;
+  padding: 16px 20px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.4;
+}
+.about-badge strong {
+  display: block;
+  font-size: 24px;
+  font-family: 'Playfair Display', serif;
+}
+
+/* ═══════════════════════════════════
+   SERVICES — Spotlight Border Cards
+═══════════════════════════════════ */
+.services {
+  padding: 120px 0;
+  background: var(--card);
+  border-top: 1px solid var(--border);
+}
+.services-header {
+  text-align: center;
+  margin-bottom: 64px;
+}
+.services-header .section-body {
+  margin: 0 auto;
+}
+.spot-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  position: relative;
+}
+.spot-card {
+  position: relative;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 32px 28px;
+  overflow: hidden;
+  transition: all 0.4s var(--ease);
+  cursor: default;
+}
+.spot-card::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 14px;
+  background: radial-gradient(circle 200px at var(--mx, 50%) var(--my, 50%), rgba(200,169,110,0.08), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+  z-index: 0;
+}
+.spot-card:hover::before { opacity: 1; }
+.spot-card:hover {
+  transform: perspective(800px) rotateY(calc(var(--rx, 0) * 1deg)) rotateX(calc(var(--ry, 0) * -1deg)) scale(1.02);
+  border-color: rgba(200,169,110,0.3);
+}
+.spot-icon {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  background: var(--accent-light);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  color: var(--accent);
+  position: relative;
+  z-index: 1;
+}
+.spot-card h3 {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 10px;
+  position: relative;
+  z-index: 1;
+}
+.spot-card p {
+  font-size: 14px;
+  color: #7a9ab8;
+  line-height: 1.7;
+  position: relative;
+  z-index: 1;
+}
+.spot-card ul {
+  list-style: none;
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+  z-index: 1;
+}
+.spot-card ul li {
+  font-size: 13px;
+  color: #6a8aaa;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.spot-card ul li::before {
+  content: '';
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+/* ═══════════════════════════════════
+   PROCESS — Sticky Stack
+═══════════════════════════════════ */
+.process {
+  padding: 120px 0;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+}
+.process-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: start;
+}
+.process-sticky {
+  position: sticky;
+  top: 120px;
+}
+.process-visual {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 40px;
+  text-align: center;
+}
+.process-visual-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.process-visual-sub {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 32px;
+}
+.process-visual-icon {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: var(--accent-light);
+  border: 2px solid rgba(200,169,110,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+  color: var(--accent);
+  transition: all 0.5s var(--ease);
+}
+.active-step .process-visual-icon {
+  background: rgba(200,169,110,0.15);
+  border-color: var(--accent);
+  box-shadow: 0 0 40px rgba(200,169,110,0.2);
+}
+.step-indicator {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 24px;
+}
+.step-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: all 0.4s var(--ease);
+}
+.step-dot.active {
+  background: var(--accent);
+  transform: scale(1.3);
+}
+
+.process-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.step-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px;
+  transition: all 0.4s var(--ease);
+}
+.step-card.is-active {
+  border-color: rgba(200,169,110,0.4);
+  background: var(--card2);
+  box-shadow: 0 4px 40px rgba(200,169,110,0.08);
+}
+.step-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.step-card h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.step-card p {
+  font-size: 14px;
+  color: #7a9ab8;
+  line-height: 1.7;
+}
+
+/* ═══════════════════════════════════
+   STATS — Odometer
+═══════════════════════════════════ */
+.stats {
+  padding: 100px 0;
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 40px;
+  text-align: center;
+}
+.stat-item {}
+.stat-number {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 2px;
+  overflow: hidden;
+}
+.odometer-wrap {
+  display: flex;
+  align-items: baseline;
+}
+.odometer-digit {
+  display: inline-block;
+  height: 58px;
+  overflow: hidden;
+  position: relative;
+}
+.digit-strip {
+  display: flex;
+  flex-direction: column;
+  transition: transform 1.2s cubic-bezier(.16,1,.3,1);
+}
+.digit-strip span {
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1;
+}
+.stat-suffix {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-left: 2px;
+}
+.stat-label {
+  font-size: 13px;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}
+
+/* ═══════════════════════════════════
+   FAQ
+═══════════════════════════════════ */
+.faq {
+  padding: 120px 0;
+  background: var(--bg);
+}
+.faq-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: start;
+}
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.faq-item {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.faq-q {
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  transition: background 0.3s;
+  gap: 16px;
+  user-select: none;
+}
+.faq-q:hover { background: var(--card); }
+.faq-chevron {
+  color: var(--accent);
+  flex-shrink: 0;
+  transition: transform 0.35s var(--ease);
+}
+.faq-item.open .faq-chevron { transform: rotate(180deg); }
+.faq-a {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s var(--ease);
+}
+.faq-a-inner {
+  padding: 0 24px 20px;
+  font-size: 14px;
+  color: #7a9ab8;
+  line-height: 1.75;
+}
+.faq-item.open .faq-a { max-height: 200px; }
+
+/* ═══════════════════════════════════
+   CTA SECTION
+═══════════════════════════════════ */
+.cta-section {
+  padding: 120px 0;
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+.cta-section .section-inner {
+  max-width: 700px;
+}
+.cta-section .section-title { margin-bottom: 16px; }
+.cta-section .section-body {
+  margin: 0 auto 48px;
+  text-align: center;
+}
+.cta-buttons {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 48px;
+}
+.btn-primary {
+  background: var(--accent);
+  color: #04142b;
+  padding: 14px 32px;
+  border-radius: 32px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.4s var(--ease);
+}
+.btn-primary:hover { background: #d4b87a; transform: translateY(-2px); box-shadow: 0 8px 32px rgba(200,169,110,0.3); }
+.btn-secondary {
+  background: transparent;
+  color: var(--text);
+  padding: 14px 32px;
+  border-radius: 32px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-decoration: none;
+  display: inline-block;
+  border: 1px solid var(--border);
+  transition: all 0.4s var(--ease);
+}
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+.contact-info {
+  display: flex;
+  gap: 40px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+.contact-item:hover { color: var(--accent); }
+.contact-item svg { color: var(--accent); }
+
+/* ═══════════════════════════════════
+   FOOTER
+═══════════════════════════════════ */
+footer {
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  padding: 32px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.footer-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--accent);
+}
+.footer-copy {
+  font-size: 12px;
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+.footer-note {
+  font-size: 11px;
+  color: #3a5a7a;
+  max-width: 400px;
+  line-height: 1.6;
+  text-align: right;
+}
+
+/* ═══════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════ */
+@media (max-width: 900px) {
+  nav { padding: 16px 24px; }
+  nav.scrolled { padding: 12px 24px; }
+  .nav-links { display: none; }
+  .section-inner { padding: 0 24px; }
+  .about-grid, .process-grid, .faq-grid { grid-template-columns: 1fr; gap: 40px; }
+  .about-badge { bottom: 12px; right: 12px; }
+  .spot-grid { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: 1fr 1fr; gap: 32px; }
+  .process-sticky { position: relative; top: auto; }
+  footer { flex-direction: column; text-align: center; padding: 24px; }
+  .footer-note { text-align: center; max-width: 100%; }
+}
+@media (max-width: 600px) {
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .cta-buttons { flex-direction: column; align-items: center; }
+  .contact-info { flex-direction: column; align-items: center; }
+  .hero h1 { font-size: 36px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Loader -->
+<div id="loader">
+  <div class="loader-ring"></div>
+  <div class="loader-text">Loading</div>
+</div>
+
+<!-- Cursor glow -->
+<div id="glow"></div>
+
+<!-- Navbar -->
+<nav id="navbar">
+  <div class="nav-logo">Legacy Veterans<br>Benefit Services</div>
+  <ul class="nav-links">
+    <li><a href="#services">Services</a></li>
+    <li><a href="#process">Process</a></li>
+    <li><a href="#faq">FAQ</a></li>
+    <li><a href="payment.html" class="nav-payment">Make a Payment</a></li>
+    <li><a href="#contact" class="nav-cta">Free Consultation</a></li>
+  </ul>
+</nav>
+
+<!-- ═══════ HERO ═══════ -->
+<section class="hero">
+  <canvas id="heroCanvas"></canvas>
+  <div class="hero-grade"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">For Veterans · Spouses · Survivors</div>
+    <div class="hero-rule"></div>
+    <h1>Your service earned<br>these benefits.</h1>
+    <div class="hero-sub">VA disability support with less stress.</div>
+    <div class="hero-tagline">(253) 592-2250</div>
+    <a href="#contact" class="hero-cta">Book a Free 15-Minute Call</a>
+  </div>
+  <div class="scroll-hint">
+    <div class="scroll-hint-text">Scroll to explore</div>
+    <div class="scroll-hint-arrow">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ MARQUEE ═══════ -->
+<div class="marquee-section">
+  <div class="marquee-track" id="marqueeTrack">
+    <div class="marquee-content" id="marqueeContent">
+      <div class="marquee-item"><span>New VA Claims</span><div class="marquee-dot"></div></div>
+      <div class="marquee-item"><span>Increased Rating Reviews</span><div class="marquee-dot"></div></div>
+      <div class="marquee-item"><span>Denial &amp; Appeal Prep</span><div class="marquee-dot"></div></div>
+      <div class="marquee-item"><span>C&amp;P Exam Support</span><div class="marquee-dot"></div></div>
+      <div class="marquee-item"><span>Evidence Review</span><div class="marquee-dot"></div></div>
+      <div class="marquee-item"><span>Written Action Plans</span><div class="marquee-dot"></div></div>
+      <div class="marquee-item"><span>Plain-Language Guidance</span><div class="marquee-dot"></div></div>
+      <div class="marquee-item"><span>Pre-Hearing Preparation</span><div class="marquee-dot"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ ABOUT ═══════ -->
+<section class="about" id="about">
+  <div class="section-inner">
+    <div class="about-grid">
+      <div class="about-visual fade-up">
+        <div class="about-image-wrap">
+          <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&h=600&fit=crop&q=80" alt="Veterans consulting at a table" loading="lazy">
+        </div>
+        <div class="about-badge">
+          <strong>Free</strong>
+          15-Min Consultation
+        </div>
+      </div>
+      <div class="fade-up">
+        <div class="section-label">About</div>
+        <h2 class="section-title">We help you claim what you earned.</h2>
+        <p class="section-body">Legacy Veterans Benefit Services exists to support veterans who feel overwhelmed by the VA disability process. Forms, evidence, timelines, and confusing letters turn an earned benefit into a source of stress.</p>
+        <p class="section-body" style="margin-top:16px;">The focus stays on clear steps, plain language, and steady support as you move through each stage of your claim or appeal.</p>
+        <div style="margin-top:32px; padding:20px 24px; background:var(--card); border:1px solid var(--border); border-radius:10px; border-left:3px solid var(--accent);">
+          <p style="font-size:13px; color:var(--muted); line-height:1.7;"><strong style="color:#8ab0d8;">Important:</strong> Legacy Veterans Benefit Services is a private business and not part of the Department of Veterans Affairs or any government agency. This service does not provide legal advice.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ SERVICES ═══════ -->
+<section class="services" id="services">
+  <div class="section-inner">
+    <div class="services-header fade-up">
+      <div class="section-label">Services</div>
+      <h2 class="section-title">Support for every stage of your claim.</h2>
+      <p class="section-body">Whether you are filing for the first time, seeking a higher rating, or responding to a denial — clear guidance at every step.</p>
+    </div>
+    <div class="spot-grid" id="spotGrid">
+      <div class="spot-card fade-up">
+        <div class="spot-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </div>
+        <h3>New VA Disability Claims</h3>
+        <p>Starting a claim for the first time? Get structured support from the very beginning.</p>
+        <ul>
+          <li>Review of service and medical history</li>
+          <li>Match conditions with VA criteria</li>
+          <li>Evidence and lay statement guidance</li>
+          <li>Support from planning to submission</li>
+        </ul>
+      </div>
+      <div class="spot-card fade-up">
+        <div class="spot-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        </div>
+        <h3>Increased Rating Reviews</h3>
+        <p>If your symptoms have worsened or your rating doesn't reflect your daily reality.</p>
+        <ul>
+          <li>Review of current rating and past decisions</li>
+          <li>Discussion of symptoms and daily impact</li>
+          <li>Plan for updated evidence and statements</li>
+          <li>Support during requests for higher ratings</li>
+        </ul>
+      </div>
+      <div class="spot-card fade-up">
+        <div class="spot-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <h3>Denial &amp; Appeal Preparation</h3>
+        <p>A denial is not the end. Understand what went wrong and build a stronger case.</p>
+        <ul>
+          <li>Review of denial reasons and evidence gaps</li>
+          <li>Strategy for stronger evidence and arguments</li>
+          <li>Guidance on next appeal steps and options</li>
+          <li>Preparation before reviews and follow-up</li>
+        </ul>
+      </div>
+      <div class="spot-card fade-up">
+        <div class="spot-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <h3>Plain-Language Explanations</h3>
+        <p>VA letters and decisions can be confusing. Get clear answers in plain English.</p>
+        <ul>
+          <li>Translation of VA terms and decisions</li>
+          <li>Review of letters and correspondence</li>
+          <li>Guidance on what each decision means</li>
+          <li>Next steps clearly outlined</li>
+        </ul>
+      </div>
+      <div class="spot-card fade-up">
+        <div class="spot-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        </div>
+        <h3>Written Action Plans</h3>
+        <p>Leave every session with a clear, written plan — no guessing what to do next.</p>
+        <ul>
+          <li>Conditions to pursue clearly identified</li>
+          <li>Evidence to gather listed step by step</li>
+          <li>Timelines and milestones mapped out</li>
+          <li>Ongoing reference document for your claim</li>
+        </ul>
+      </div>
+      <div class="spot-card fade-up">
+        <div class="spot-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <h3>C&amp;P Exam &amp; Hearing Prep</h3>
+        <p>Know what to expect before key milestones so you can show up prepared and confident.</p>
+        <ul>
+          <li>What to expect at C&amp;P exams</li>
+          <li>How to accurately describe your symptoms</li>
+          <li>Pre-hearing preparation and strategy</li>
+          <li>Document review before key dates</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ STATS ═══════ -->
+<section class="stats">
+  <div class="section-inner">
+    <div class="stats-grid">
+      <div class="stat-item fade-up">
+        <div class="stat-number">
+          <div class="odometer-wrap" data-value="15" data-suffix="min"></div>
+        </div>
+        <div class="stat-label">Free first consultation</div>
+      </div>
+      <div class="stat-item fade-up">
+        <div class="stat-number">
+          <div class="odometer-wrap" data-value="4" data-suffix=" steps"></div>
+        </div>
+        <div class="stat-label">Clear, structured process</div>
+      </div>
+      <div class="stat-item fade-up">
+        <div class="stat-number">
+          <div class="odometer-wrap" data-value="1" data-suffix=" day"></div>
+        </div>
+        <div class="stat-label">Response within one business day</div>
+      </div>
+      <div class="stat-item fade-up">
+        <div class="stat-number">
+          <div class="odometer-wrap" data-value="0" data-suffix="% govt"></div>
+        </div>
+        <div class="stat-label">Independent private support</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ PROCESS ═══════ -->
+<section class="process" id="process">
+  <div class="section-inner">
+    <div class="process-grid">
+      <div class="process-sticky">
+        <div class="section-label">How It Works</div>
+        <h2 class="section-title" style="margin-bottom:8px;">Four steps.<br>One clear path.</h2>
+        <p class="section-body" style="margin-bottom:40px;">A simple, structured process designed to reduce uncertainty at every stage.</p>
+        <div class="process-visual" id="processVisual">
+          <div class="process-visual-icon" id="processIcon">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.93 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.88 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 8.91a16 16 0 0 0 5.93 5.93l.84-1.13a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          </div>
+          <div class="process-visual-title" id="processTitle">Free 15-Min Call</div>
+          <div class="process-visual-sub" id="processSub">Share your situation and goals</div>
+          <div class="step-indicator">
+            <div class="step-dot active" data-step="0"></div>
+            <div class="step-dot" data-step="1"></div>
+            <div class="step-dot" data-step="2"></div>
+            <div class="step-dot" data-step="3"></div>
+          </div>
+        </div>
+      </div>
+      <div class="process-steps">
+        <div class="step-card fade-up is-active" data-step-index="0"
+          data-icon='<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.93 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.88 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 8.91a16 16 0 0 0 5.93 5.93l.84-1.13a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>'
+          data-title="Free 15-Min Call" data-sub="Share your situation and goals">
+          <div class="step-num">STEP 01</div>
+          <h3>Free 15-Minute Call</h3>
+          <p>Share your situation, service history, and goals. If the service is not a strong match for your needs, you hear that early — no pressure, no obligation.</p>
+        </div>
+        <div class="step-card fade-up" data-step-index="1"
+          data-icon='<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>'
+          data-title="File & History Review" data-sub="Focused review of your records">
+          <div class="step-num">STEP 02</div>
+          <h3>File &amp; History Review</h3>
+          <p>Provide decision letters and records. Those materials receive a focused review and you receive realistic paths for a claim or appeal — no false promises.</p>
+        </div>
+        <div class="step-card fade-up" data-step-index="2"
+          data-icon='<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>'
+          data-title="Written Action Plan" data-sub="Your clear roadmap forward">
+          <div class="step-num">STEP 03</div>
+          <h3>Written Action Plan</h3>
+          <p>Together you select conditions to pursue, evidence to gather, and timelines to follow. You leave this step with a clear written plan — not verbal guidance you'll forget.</p>
+        </div>
+        <div class="step-card fade-up" data-step-index="3"
+          data-icon='<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'
+          data-title="Ongoing Support" data-sub="With you at every milestone">
+          <div class="step-num">STEP 04</div>
+          <h3>Ongoing Support</h3>
+          <p>Support continues for questions, document review, and preparation before milestones such as C&amp;P exams or VA letters that need a response.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ FAQ ═══════ -->
+<section class="faq" id="faq">
+  <div class="section-inner">
+    <div class="faq-grid">
+      <div class="fade-up">
+        <div class="section-label">FAQ</div>
+        <h2 class="section-title">Common questions answered.</h2>
+        <p class="section-body">Straightforward answers about how this service works and what to expect.</p>
+        <div style="margin-top:40px; padding:24px; background:var(--card); border:1px solid var(--border); border-radius:12px;">
+          <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--accent); letter-spacing:0.15em; text-transform:uppercase; margin-bottom:12px;">Still have questions?</div>
+          <p style="font-size:14px; color:#7a9ab8; line-height:1.7; margin-bottom:16px;">The free 15-minute consultation is designed to answer your specific questions. Book one with no obligation.</p>
+          <a href="#contact" class="btn-primary" style="font-size:13px; padding:10px 22px;">Book Free Call</a>
+        </div>
+      </div>
+      <div class="faq-list fade-up">
+        <div class="faq-item open">
+          <div class="faq-q">
+            Are you part of the VA?
+            <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="faq-a"><div class="faq-a-inner">No. Legacy Veterans Benefit Services is a private business. Support focuses on helping you understand and respond to VA decisions, not on speaking for the VA. Think of it as having a knowledgeable guide beside you as you navigate the process.</div></div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">
+            Do you guarantee a rating or back pay?
+            <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="faq-a"><div class="faq-a-inner">No one controls VA outcomes. The focus remains on accurate information, strong evidence, and clear strategy to give your claim the best chance possible. Anyone who guarantees a specific rating or outcome is not being honest with you.</div></div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">
+            Do you provide legal advice?
+            <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="faq-a"><div class="faq-a-inner">No. The service offers education, guidance, and support — not legal representation. If your situation requires legal representation (such as a Board of Veterans Appeals hearing with a judge), you will be told that clearly and directed to appropriate resources.</div></div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">
+            Who can use this service?
+            <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="faq-a"><div class="faq-a-inner">Veterans, their spouses, and survivors navigating VA disability claims. Whether you are just starting, have been denied, or feel stuck at a particular stage of the process — the free consultation is the best way to find out if this service is a good fit for your situation.</div></div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">
+            How quickly will I hear back?
+            <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="faq-a"><div class="faq-a-inner">All messages and form submissions receive a response within one business day. For the fastest response, calling (253) 592-2250 directly is recommended.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ CTA ═══════ -->
+<section class="cta-section" id="contact">
+  <div class="section-inner">
+    <div class="fade-up">
+      <div class="section-label">Get Started</div>
+      <h2 class="section-title">Ready to move forward?</h2>
+      <p class="section-body">Book a free 15-minute call or send a message. A response follows within one business day. No obligation — just clarity.</p>
+    </div>
+    <div class="cta-buttons fade-up">
+      <a href="tel:2535922250" class="btn-primary">Call (253) 592-2250</a>
+      <a href="payment.html" class="btn-secondary" style="border-color: var(--accent); color: var(--accent);">Make a Payment</a>
+      <a href="mailto:info@legacyveteransbenefitservices.com" class="btn-secondary">Send a Message</a>
+    </div>
+    <div class="contact-info fade-up">
+      <a href="tel:2535922250" class="contact-item">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.93 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.88 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 8.91a16 16 0 0 0 5.93 5.93l.84-1.13a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        (253) 592-2250
+      </a>
+      <a href="https://legacyveteransbenefitservices.com" class="contact-item">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        legacyveteransbenefitservices.com
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ FOOTER ═══════ -->
+<footer>
+  <div class="footer-logo">Legacy Veterans Benefit Services</div>
+  <div class="footer-copy">&copy; 2026 Legacy Veterans Benefit Services</div>
+  <div class="footer-note">Private support service. Not affiliated with the Department of Veterans Affairs or any government agency. Does not provide legal advice.</div>
+</footer>
+
+<script>
+gsap.registerPlugin(ScrollTrigger);
+
+/* ── Canvas hero — dual scene crossfade ── */
+var canvas = document.getElementById('heroCanvas');
+var ctx = canvas.getContext('2d');
+
+var totalFrames = 121;
+var framesA = [];   // flag
+var framesB = [];   // dog tags
+var loadedA = 0, loadedB = 0;
+
+var currentFrame = 0;
+var lastTime = 0;
+var fps = 24;
+var interval = 1000 / fps;
+
+// Crossfade state
+var SCENE_HOLD = fps * 6;      // hold each scene 6s at full opacity
+var FADE_FRAMES = fps * 2;     // 2s fade between scenes
+var CYCLE = totalFrames + SCENE_HOLD + FADE_FRAMES; // total cycle length
+var globalTick = 0;            // counts every frame tick
+var sceneIndex = 0;            // 0 = flag, 1 = dog tags
+
+function resize() {
+  var w = window.innerWidth;
+  var h = window.innerHeight;
+  canvas.width = w;
+  canvas.height = h;
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+}
+window.addEventListener('resize', resize);
+resize();
+
+function drawImg(img, alpha) {
+  if (!img || !img.complete) return;
+  ctx.globalAlpha = alpha;
+  var r = Math.max(canvas.width / img.width, canvas.height / img.height);
+  var w = img.width * r, h = img.height * r;
+  ctx.drawImage(img, (canvas.width - w) / 2, (canvas.height - h) / 2, w, h);
+}
+
+function animate(timestamp) {
+  requestAnimationFrame(animate);
+  if (loadedA < totalFrames || loadedB < totalFrames) return;
+  if (timestamp - lastTime < interval) return;
+  lastTime = timestamp;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Which frame within the current scene loop
+  var frameIdx = currentFrame;
+
+  // Position within the cycle: [0..totalFrames) play, [totalFrames..totalFrames+SCENE_HOLD) hold, then fade
+  var cyclePos = globalTick % (totalFrames + SCENE_HOLD + FADE_FRAMES);
+
+  var alpha = 1;
+  if (cyclePos >= totalFrames + SCENE_HOLD) {
+    // Fading out
+    var fadePos = cyclePos - (totalFrames + SCENE_HOLD);
+    alpha = 1 - fadePos / FADE_FRAMES;
+  }
+
+  // Draw current scene
+  var current = sceneIndex === 0 ? framesA : framesB;
+  var next    = sceneIndex === 0 ? framesB : framesA;
+
+  // Draw next scene underneath (always full opacity)
+  drawImg(next[frameIdx], 1);
+  // Draw current scene on top with fading alpha
+  drawImg(current[frameIdx], Math.max(0, alpha));
+
+  // Advance frame (loop within totalFrames during play, hold on last frame)
+  if (cyclePos < totalFrames - 1) {
+    currentFrame++;
+  } else if (cyclePos >= totalFrames + SCENE_HOLD + FADE_FRAMES - 1) {
+    // End of fade — switch scene, reset frame
+    sceneIndex = sceneIndex === 0 ? 1 : 0;
+    currentFrame = 0;
+  }
+
+  globalTick++;
+}
+requestAnimationFrame(animate);
+
+// Load flag frames (A)
+for (var i = 1; i <= totalFrames; i++) {
+  (function(idx) {
+    var img = new Image();
+    img.src = 'assets/frames/frame-' + String(idx).padStart(4, '0') + '.jpg';
+    img.onload = function() {
+      loadedA++;
+      if (loadedA === 1) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawImg(img, 1);
+      }
+      if (loadedA + loadedB >= Math.floor(totalFrames * 0.8)) {
+        var loader = document.getElementById('loader');
+        if (loader && loader.style.display !== 'none') {
+          loader.style.opacity = '0';
+          setTimeout(function() { loader.style.display = 'none'; }, 600);
+        }
+      }
+    };
+    framesA[idx - 1] = img;
+  })(i);
+}
+
+// Load dog tags frames (B)
+for (var j = 1; j <= totalFrames; j++) {
+  (function(idx) {
+    var img = new Image();
+    img.src = 'assets/frames-b/frame-' + String(idx).padStart(4, '0') + '.jpg';
+    img.onload = function() {
+      loadedB++;
+      if (loadedA + loadedB >= Math.floor(totalFrames * 0.8)) {
+        var loader = document.getElementById('loader');
+        if (loader && loader.style.display !== 'none') {
+          loader.style.opacity = '0';
+          setTimeout(function() { loader.style.display = 'none'; }, 600);
+        }
+      }
+    };
+    framesB[idx - 1] = img;
+  })(j);
+}
+
+/* ── Navbar scroll ── */
+window.addEventListener('scroll', function() {
+  var nav = document.getElementById('navbar');
+  if (window.scrollY > 60) {
+    nav.classList.add('scrolled');
+  } else {
+    nav.classList.remove('scrolled');
+  }
+});
+
+/* ── Cursor glow ── */
+var glow = document.getElementById('glow');
+var mx = 0, my = 0, gx = 0, gy = 0;
+document.addEventListener('mousemove', function(e) { mx = e.clientX; my = e.clientY; });
+function moveGlow() {
+  gx += (mx - gx) * 0.1;
+  gy += (my - gy) * 0.1;
+  glow.style.transform = 'translate(' + (gx - 250) + 'px,' + (gy - 250) + 'px)';
+  requestAnimationFrame(moveGlow);
+}
+moveGlow();
+
+/* ── Fade up animations ── */
+gsap.utils.toArray('.fade-up').forEach(function(el) {
+  gsap.to(el, {
+    opacity: 1,
+    y: 0,
+    duration: 0.8,
+    ease: 'power3.out',
+    scrollTrigger: {
+      trigger: el,
+      start: 'top 88%',
+      toggleActions: 'play none none none'
+    }
+  });
+});
+
+/* ── Spotlight border cards ── */
+var spotGrid = document.getElementById('spotGrid');
+if (spotGrid) {
+  spotGrid.addEventListener('mousemove', function(e) {
+    spotGrid.querySelectorAll('.spot-card').forEach(function(card) {
+      var r = card.getBoundingClientRect();
+      var x = e.clientX - r.left;
+      var y = e.clientY - r.top;
+      card.style.setProperty('--mx', x + 'px');
+      card.style.setProperty('--my', y + 'px');
+      var rx = ((e.clientX - r.left) / r.width - 0.5) * 6;
+      var ry = ((e.clientY - r.top) / r.height - 0.5) * 6;
+      card.style.setProperty('--rx', rx);
+      card.style.setProperty('--ry', ry);
+    });
+  });
+  spotGrid.addEventListener('mouseleave', function() {
+    spotGrid.querySelectorAll('.spot-card').forEach(function(card) {
+      card.style.transform = '';
+    });
+  });
+}
+
+/* ── Magnetic buttons ── */
+document.querySelectorAll('.btn-primary, .nav-cta, .hero-cta').forEach(function(btn) {
+  btn.addEventListener('mousemove', function(e) {
+    var r = btn.getBoundingClientRect();
+    var cx = r.left + r.width / 2;
+    var cy = r.top + r.height / 2;
+    btn.style.transform = 'translate(' + ((e.clientX - cx) * 0.25) + 'px,' + ((e.clientY - cy) * 0.25) + 'px)';
+  });
+  btn.addEventListener('mouseleave', function() {
+    btn.style.transform = '';
+  });
+});
+
+/* ── Kinetic marquee ── */
+(function() {
+  var content = document.getElementById('marqueeContent');
+  var track = document.getElementById('marqueeTrack');
+  if (!content || !track) return;
+  var clone = content.cloneNode(true);
+  track.appendChild(clone);
+  var x = 0;
+  var baseSpeed = 0.6;
+  var scrollV = 0;
+  ScrollTrigger.create({
+    trigger: document.body,
+    start: 'top top',
+    end: 'bottom bottom',
+    onUpdate: function(self) {
+      scrollV = self.getVelocity() * 0.003;
+    }
+  });
+  function loop() {
+    scrollV *= 0.95;
+    x -= (baseSpeed + Math.abs(scrollV) * 0.15);
+    var w = content.offsetWidth;
+    if (Math.abs(x) >= w) x = 0;
+    track.style.transform = 'translateX(' + x + 'px)';
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+
+/* ── Odometer counters ── */
+function buildOdometer(el) {
+  var val = parseInt(el.dataset.value, 10);
+  var suffix = el.dataset.suffix || '';
+  var digits = String(val).split('');
+  el.innerHTML = '';
+  digits.forEach(function(d, i) {
+    var wrap = document.createElement('div');
+    wrap.className = 'odometer-digit';
+    var strip = document.createElement('div');
+    strip.className = 'digit-strip';
+    strip.style.transitionDelay = (i * 0.12) + 's';
+    for (var n = 0; n <= 9; n++) {
+      var span = document.createElement('span');
+      span.textContent = n;
+      strip.appendChild(span);
+    }
+    wrap.appendChild(strip);
+    el.appendChild(wrap);
+    strip._target = parseInt(d, 10);
+    strip._height = 58;
+  });
+  if (suffix) {
+    var s = document.createElement('span');
+    s.className = 'stat-suffix';
+    s.textContent = suffix;
+    el.appendChild(s);
+  }
+
+  ScrollTrigger.create({
+    trigger: el,
+    start: 'top 85%',
+    once: true,
+    onEnter: function() {
+      el.querySelectorAll('.digit-strip').forEach(function(strip) {
+        strip.style.transform = 'translateY(-' + (strip._target * strip._height) + 'px)';
+      });
+    }
+  });
+}
+document.querySelectorAll('.odometer-wrap').forEach(buildOdometer);
+
+/* ── Sticky stack / process ── */
+var stepCards = document.querySelectorAll('.step-card');
+var processTitle = document.getElementById('processTitle');
+var processSub = document.getElementById('processSub');
+var processIcon = document.getElementById('processIcon');
+var stepDots = document.querySelectorAll('.step-dot');
+
+stepCards.forEach(function(card, idx) {
+  ScrollTrigger.create({
+    trigger: card,
+    start: 'top 55%',
+    end: 'bottom 45%',
+    onEnter: function() { activateStep(idx); },
+    onEnterBack: function() { activateStep(idx); }
+  });
+});
+
+function activateStep(idx) {
+  stepCards.forEach(function(c) { c.classList.remove('is-active'); });
+  stepCards[idx].classList.add('is-active');
+  stepDots.forEach(function(d) { d.classList.remove('active'); });
+  document.querySelector('.step-dot[data-step="' + idx + '"]').classList.add('active');
+  if (processTitle) processTitle.textContent = stepCards[idx].dataset.title;
+  if (processSub) processSub.textContent = stepCards[idx].dataset.sub;
+  if (processIcon) {
+    processIcon.innerHTML = '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' + stepCards[idx].dataset.icon + '</svg>';
+  }
+}
+
+/* ── FAQ accordion ── */
+document.querySelectorAll('.faq-q').forEach(function(q) {
+  q.addEventListener('click', function() {
+    var item = q.closest('.faq-item');
+    var isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(function(i) { i.classList.remove('open'); });
+    if (!isOpen) item.classList.add('open');
+  });
+});
+</script>
+</body>
+</html>
+
